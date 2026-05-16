@@ -5,6 +5,7 @@
   "sdk": 3,
   "runtime": "nodejs",
   "brandColor": "#ee3947",
+  "support": "https://github.com/ftedv-de/de.ftedv.thermopro/issues",
   "platforms": [
     "local"
   ],

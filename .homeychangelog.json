@@ -1,0 +1,29 @@
+{
+  "1.0.0": {
+    "en": "First version!"
+  },
+  "1.0.1": {
+    "en": "Central scanning in app. devices update from cache to minimize BLE scanning"
+  },
+  "1.1.0": {
+    "en": "Bug fixes"
+  },
+  "1.1.1": {
+    "en": "Fixed images"
+  },
+  "1.2.0": {
+    "en": "Added debugging features for dump reports"
+  },
+  "1.2.1": {
+    "en": "Added homey community topic id"
+  },
+  "1.2.2": {
+    "en": "Added settings page"
+  },
+  "1.2.3": {
+    "en": "Added icons"
+  },
+  "1.2.4": {
+    "en": "respect dark mode and translated settings page (de, en)"
+  }
+}

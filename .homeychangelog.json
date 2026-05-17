@@ -25,5 +25,8 @@
   },
   "1.2.4": {
     "en": "respect dark mode and translated settings page (de, en)"
+  },
+  "1.2.5": {
+    "en": "Minor changes"
   }
 }

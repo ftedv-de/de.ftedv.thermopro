@@ -1,6 +1,6 @@
 {
   "id": "de.ftedv.thermopro",
-  "version": "1.2.10",
+  "version": "1.2.11",
   "compatibility": ">=12.4.0",
   "sdk": 3,
   "runtime": "nodejs",

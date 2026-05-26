@@ -1,6 +1,6 @@
 {
   "id": "de.ftedv.thermopro",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "compatibility": ">=12.4.0",
   "sdk": 3,
   "runtime": "nodejs",
@@ -9,11 +9,11 @@
     "local"
   ],
   "name": {
-    "en": "ThermoPro BLE"
+    "en": "ThermoPro"
   },
   "description": {
-    "en": "Read ThermoPro Bluetooth temperature and humidity sensors.",
-    "de": "Liest ThermoPro Bluetooth Temperatur- und Luftfeuchtesensoren aus."
+    "en": "Real-Time Temperature & Humidity Monitoring",
+    "de": "Echtzeit Temperatur & Luftfeuchte Überwachung"
   },
   "category": [
     "climate"

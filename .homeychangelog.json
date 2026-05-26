@@ -34,5 +34,8 @@
   },
   "1.2.7": {
     "en": "Changed assets and description to be compliant to review"
+  },
+  "1.2.8": {
+    "en": "Added more elaborate readme text"
   }
 }

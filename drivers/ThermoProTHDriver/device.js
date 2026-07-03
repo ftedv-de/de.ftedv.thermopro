@@ -14,9 +14,9 @@ module.exports = class ThermoProTHDevice extends Homey.Device {
 
     this.peripheralUuid = this.getStoreValue('peripheralUuid');
     this.address = this.getStoreValue('address');
+    this.localName = this.getStoreValue('localName');
     this.model = this.getStoreValue('model');
-
-    this.lastDecode = null;
+    this.dataId = this.getData()?.id;
 
     this.updateTimer = this.homey.setInterval(async () => {
       try {
@@ -27,6 +27,8 @@ module.exports = class ThermoProTHDevice extends Homey.Device {
           model: this.model,
           address: this.address,
           peripheralUuid: this.peripheralUuid,
+          localName: this.localName,
+          dataId: this.dataId,
         });
       }
     }, 35000);
@@ -39,18 +41,15 @@ module.exports = class ThermoProTHDevice extends Homey.Device {
         model: this.model,
         address: this.address,
         peripheralUuid: this.peripheralUuid,
+        localName: this.localName,
+        dataId: this.dataId,
       });
     }
   }
 
   async scan() {
     const advertisements = this.homey.app.getBleAdvertisements();
-
-    const adv = advertisements.find(a =>
-      a.uuid === this.peripheralUuid ||
-      a.address === this.address ||
-      getSupportedModel(a.localName) === this.model
-    );
+    const adv = this.findAdvertisement(advertisements);
 
     if (!adv) {
       this.homey.app.debug('Device not found in BLE cache', {
@@ -58,9 +57,13 @@ module.exports = class ThermoProTHDevice extends Homey.Device {
         model: this.model,
         address: this.address,
         peripheralUuid: this.peripheralUuid,
+        localName: this.localName,
+        dataId: this.dataId,
       });
       return;
     }
+
+    await this.migrateStoreFromAdvertisement(adv);
 
     const decoded = decodeThermoProTH(adv);
 
@@ -70,6 +73,8 @@ module.exports = class ThermoProTHDevice extends Homey.Device {
         model: this.model,
         address: this.address,
         peripheralUuid: this.peripheralUuid,
+        localName: this.localName,
+        dataId: this.dataId,
       });
       return;
     }
@@ -78,6 +83,7 @@ module.exports = class ThermoProTHDevice extends Homey.Device {
       device: this.getName(),
       timestamp: new Date().toISOString(),
       model: this.model,
+      localName: this.localName,
       raw: decoded.raw,
       temperature: decoded.temperature,
       humidity: decoded.humidity,
@@ -107,6 +113,66 @@ module.exports = class ThermoProTHDevice extends Homey.Device {
       typeof adv.rssi === 'number'
     ) {
       await this.setCapabilityValue('measure_signal_strength', adv.rssi);
+    }
+  }
+
+  findAdvertisement(advertisements) {
+    return advertisements.find(adv => this.matchesAdvertisement(adv));
+  }
+
+  matchesAdvertisement(adv) {
+    if (!adv) return false;
+
+    if (this.peripheralUuid && adv.uuid === this.peripheralUuid) return true;
+    if (this.address && adv.address === this.address) return true;
+    if (this.localName && adv.localName === this.localName) return true;
+
+    if (this.dataId) {
+      if (adv.uuid === this.dataId) return true;
+      if (adv.address === this.dataId) return true;
+    }
+
+    // Do not match by model only. Multiple sensors of the same model would then
+    // all pick the same advertisement and show identical values.
+    return false;
+  }
+
+  async migrateStoreFromAdvertisement(adv) {
+    const updates = [];
+
+    if (!this.peripheralUuid && adv.uuid) {
+      this.peripheralUuid = String(adv.uuid);
+      updates.push(this.setStoreValue('peripheralUuid', this.peripheralUuid));
+    }
+
+    if (!this.address && adv.address) {
+      this.address = String(adv.address);
+      updates.push(this.setStoreValue('address', this.address));
+    }
+
+    if (!this.localName && adv.localName) {
+      this.localName = String(adv.localName);
+      updates.push(this.setStoreValue('localName', this.localName));
+    }
+
+    if (!this.model && adv.localName) {
+      const model = getSupportedModel(adv.localName);
+      if (model) {
+        this.model = model;
+        updates.push(this.setStoreValue('model', this.model));
+      }
+    }
+
+    if (updates.length > 0) {
+      await Promise.all(updates);
+      this.homey.app.debug('Migrated ThermoPro device store', {
+        device: this.getName(),
+        model: this.model,
+        address: this.address,
+        peripheralUuid: this.peripheralUuid,
+        localName: this.localName,
+        dataId: this.dataId,
+      });
     }
   }
 

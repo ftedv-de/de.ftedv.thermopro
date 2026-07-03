@@ -37,6 +37,7 @@ module.exports = class ThermoProTHDriver extends Homey.Driver {
             model,
             peripheralUuid: String(adv.uuid || ''),
             address: String(adv.address || ''),
+            localName: String(adv.localName || ''),
           },
           settings: {},
         };

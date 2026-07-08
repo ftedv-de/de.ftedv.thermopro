@@ -55,5 +55,8 @@
   },
   "1.3.0": {
     "en": "Added TP357S and added multi device support"
+  },
+  "1.3.1": {
+    "en": "Added deprecation notice"
   }
 }

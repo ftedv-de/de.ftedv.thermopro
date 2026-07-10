@@ -11,6 +11,30 @@
       gap: 8px;
     }
 
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .summary-card {
+      padding: 10px;
+      border-radius: 8px;
+      background: rgba(127, 127, 127, 0.12);
+    }
+
+    .summary-card strong,
+    .summary-card span {
+      display: block;
+    }
+
+    .summary-card span {
+      margin-top: 4px;
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
     pre {
       max-height: 320px;
       overflow: auto;
@@ -63,6 +87,7 @@
       </div>
 
       <p id="scan-status" class="homey-form-helper" role="status" aria-live="polite"></p>
+      <div id="scan-summary" class="summary-grid" hidden></div>
     </div>
 
     <div class="homey-form-group">
@@ -78,6 +103,7 @@
       const debugElement = document.getElementById('debug');
       const scanButtons = Array.from(document.querySelectorAll('.scan-button'));
       const scanStatus = document.getElementById('scan-status');
+      const scanSummary = document.getElementById('scan-summary');
       const scanResult = document.getElementById('scan-result');
       const copyButton = document.getElementById('copy-result');
       let lastResult = null;
@@ -101,6 +127,29 @@
         scanButtons.forEach(button => {
           button.disabled = scanning;
         });
+      }
+
+      function renderSummary(groups) {
+        scanSummary.innerHTML = '';
+        const entries = Object.entries(groups || {});
+        scanSummary.hidden = entries.length === 0;
+
+        entries
+          .sort(([left], [right]) => left.localeCompare(right))
+          .forEach(([name, stats]) => {
+            const card = document.createElement('div');
+            card.className = 'summary-card';
+
+            const title = document.createElement('strong');
+            title.textContent = name;
+
+            const details = document.createElement('span');
+            details.textContent = `${stats.matched} matched, ${stats.unknown} unknown, ${stats.total} total`;
+
+            card.appendChild(title);
+            card.appendChild(details);
+            scanSummary.appendChild(card);
+          });
       }
 
       function fallbackCopyText(text) {
@@ -140,6 +189,7 @@
         button.addEventListener('click', () => {
           setScanning(true);
           scanStatus.textContent = 'Scanning for BLE advertisements…';
+          scanSummary.hidden = true;
           scanResult.hidden = true;
           copyButton.disabled = true;
 
@@ -156,6 +206,7 @@
             const count = result && typeof result.count === 'number' ? result.count : 0;
             const total = result && typeof result.total === 'number' ? result.total : count;
             scanStatus.textContent = `Scan completed. ${count} of ${total} advertisement(s) were written to the app log.`;
+            renderSummary(result?.groups);
             scanResult.textContent = JSON.stringify(result, null, 2);
             scanResult.hidden = false;
             copyButton.disabled = false;

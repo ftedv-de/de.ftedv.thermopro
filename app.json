@@ -147,6 +147,11 @@
       "connectivity": [
         "ble"
       ],
+      "images": {
+        "small": "/drivers/GoveeTHDriver/assets/images/small.png",
+        "large": "/drivers/GoveeTHDriver/assets/images/large.png",
+        "xlarge": "/drivers/GoveeTHDriver/assets/images/xlarge.png"
+      },
       "energy": {
         "batteries": [
           "AAA"

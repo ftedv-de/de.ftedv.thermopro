@@ -5,7 +5,10 @@ const ParserRegistry = require('./lib/ParserRegistry');
 const ThermoBeaconParser = require('./lib/parsers/ThermoBeaconParser');
 const ThermoProParser = require('./lib/parsers/ThermoProParser');
 const MiFloraParser = require('./lib/parsers/MiFloraParser');
-const { getDeviceKey } = require('./lib/AdvertisementUtils');
+const {
+  getDeviceKey,
+  summarizeAdvertisement,
+} = require('./lib/AdvertisementUtils');
 
 module.exports = class ClimateSensorsApp extends Homey.App {
 
@@ -52,9 +55,6 @@ module.exports = class ClimateSensorsApp extends Homey.App {
 
   runBleOperation(operation) {
     const result = this.bleOperationQueue.then(operation, operation);
-
-    // Keep the queue usable after a failed operation while still returning the
-    // original rejection to the caller.
     this.bleOperationQueue = result.catch(() => undefined);
     return result;
   }
@@ -116,6 +116,28 @@ module.exports = class ClimateSensorsApp extends Homey.App {
 
   async getAdvertisementsForPairing() {
     return this.refreshBleAdvertisements({ dispatch: false });
+  }
+
+  async logBleScan() {
+    const advertisements = await this.refreshBleAdvertisements({ dispatch: false });
+
+    this.log(`Manual BLE scan found ${advertisements.length} unique advertisement(s)`);
+
+    advertisements.forEach((advertisement, index) => {
+      const decoded = this.parserRegistry.parse(advertisement);
+      this.log(`BLE[${index}]`, {
+        ...summarizeAdvertisement(advertisement),
+        matchedParser: decoded?.parserId || null,
+        matchedDriver: decoded?.driverId || null,
+        matchConfidence: decoded?.matchConfidence || 0,
+        matchReason: decoded?.matchReason || null,
+      });
+    });
+
+    return {
+      count: advertisements.length,
+      timestamp: new Date().toISOString(),
+    };
   }
 
   async dispatchAdvertisements(advertisements) {

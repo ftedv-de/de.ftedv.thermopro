@@ -46,6 +46,20 @@
   "permissions": [
     "homey:wireless:ble"
   ],
+  "api": {
+    "scanBle": {
+      "method": "GET",
+      "path": "/scanBle"
+    },
+    "scanMatchedBle": {
+      "method": "GET",
+      "path": "/scanBle/matched"
+    },
+    "scanUnknownBle": {
+      "method": "GET",
+      "path": "/scanBle/unknown"
+    }
+  },
   "images": {
     "small": "/assets/images/small.png",
     "large": "/assets/images/large.png",

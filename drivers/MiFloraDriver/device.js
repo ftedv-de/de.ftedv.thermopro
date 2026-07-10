@@ -37,10 +37,10 @@ module.exports = class MiFloraDevice extends BaseClimateDevice {
     }
 
     if (
-      this.hasCapability('measure_nutrition') &&
-      typeof decoded.nutrition === 'number'
+      this.hasCapability('measure_conductivity') &&
+      typeof decoded.conductivity === 'number'
     ) {
-      await this.setCapabilityValue('measure_nutrition', decoded.nutrition);
+      await this.setCapabilityValue('measure_conductivity', decoded.conductivity);
     }
   }
 

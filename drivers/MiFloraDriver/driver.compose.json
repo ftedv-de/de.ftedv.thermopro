@@ -1,0 +1,117 @@
+{
+  "name": {
+    "en": "MiFlora / Flower Care",
+    "de": "MiFlora / Flower Care"
+  },
+  "class": "sensor",
+  "capabilities": [
+    "measure_temperature",
+    "measure_luminance",
+    "measure_moisture",
+    "measure_nutrition",
+    "measure_signal_strength",
+    "measure_battery",
+    "alarm_battery"
+  ],
+  "capabilitiesOptions": {
+    "measure_moisture": {
+      "uiComponent": "sensor",
+      "title": {
+        "en": "Soil Moisture",
+        "de": "Bodenfeuchte"
+      }
+    },
+    "measure_nutrition": {
+      "title": {
+        "en": "Soil Conductivity",
+        "de": "Bodenleitfähigkeit"
+      }
+    }
+  },
+  "ui": {
+    "components": [
+      {
+        "id": "sensor",
+        "capabilities": [
+          "measure_moisture"
+        ]
+      }
+    ]
+  },
+  "settings": [
+    {
+      "id": "ble_address",
+      "type": "text",
+      "label": {
+        "en": "BLE Address",
+        "de": "BLE-Adresse"
+      },
+      "value": "",
+      "readonly": true
+    },
+    {
+      "id": "ble_uuid",
+      "type": "text",
+      "label": {
+        "en": "BLE UUID",
+        "de": "BLE-UUID"
+      },
+      "value": "",
+      "readonly": true
+    },
+    {
+      "id": "model_name",
+      "type": "text",
+      "label": {
+        "en": "Model",
+        "de": "Modell"
+      },
+      "value": "",
+      "readonly": true
+    },
+    {
+      "id": "service_uuid",
+      "type": "text",
+      "label": {
+        "en": "Service UUID",
+        "de": "Service-UUID"
+      },
+      "value": "",
+      "readonly": true
+    },
+    {
+      "id": "product_id",
+      "type": "text",
+      "label": {
+        "en": "Product ID",
+        "de": "Produkt-ID"
+      },
+      "value": "",
+      "readonly": true
+    }
+  ],
+  "platforms": [
+    "local"
+  ],
+  "connectivity": [
+    "ble"
+  ],
+  "energy": {
+    "batteries": [
+      "OTHER"
+    ]
+  },
+  "pair": [
+    {
+      "id": "list_devices",
+      "template": "list_devices",
+      "navigation": {
+        "next": "add_devices"
+      }
+    },
+    {
+      "id": "add_devices",
+      "template": "add_devices"
+    }
+  ]
+}

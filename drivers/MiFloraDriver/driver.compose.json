@@ -8,7 +8,7 @@
     "measure_temperature",
     "measure_luminance",
     "measure_moisture",
-    "measure_nutrition",
+    "measure_conductivity",
     "measure_signal_strength",
     "measure_battery",
     "alarm_battery"
@@ -21,7 +21,7 @@
         "de": "Bodenfeuchte"
       }
     },
-    "measure_nutrition": {
+    "measure_conductivity": {
       "title": {
         "en": "Soil Conductivity",
         "de": "Bodenleitfähigkeit"

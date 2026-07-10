@@ -11,14 +11,16 @@
       gap: 8px;
     }
 
-    .summary-grid {
+    .summary-grid,
+    .device-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 8px;
       margin: 12px 0;
     }
 
-    .summary-card {
+    .summary-card,
+    .device-card {
       padding: 10px;
       border-radius: 8px;
       background: rgba(127, 127, 127, 0.12);
@@ -33,6 +35,47 @@
       margin-top: 4px;
       font-size: 12px;
       opacity: 0.8;
+    }
+
+    .device-card {
+      border-left: 4px solid transparent;
+    }
+
+    .device-card.excellent { border-left-color: #2eaf62; }
+    .device-card.strong { border-left-color: #75a843; }
+    .device-card.possible { border-left-color: #d49b18; }
+    .device-card.weak { border-left-color: #d46b18; }
+    .device-card.none { border-left-color: #8a8a8a; }
+
+    .device-title {
+      font-weight: 600;
+      word-break: break-word;
+    }
+
+    .confidence-badge {
+      display: inline-block;
+      margin-top: 6px;
+      padding: 3px 7px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      background: rgba(127, 127, 127, 0.16);
+    }
+
+    .confidence-badge.excellent { color: #2eaf62; }
+    .confidence-badge.strong { color: #75a843; }
+    .confidence-badge.possible { color: #d49b18; }
+    .confidence-badge.weak { color: #d46b18; }
+    .confidence-badge.none { color: #8a8a8a; }
+
+    .candidate-list {
+      margin: 8px 0 0;
+      padding-left: 18px;
+      font-size: 12px;
+    }
+
+    .candidate-list li {
+      margin: 2px 0;
     }
 
     pre {
@@ -88,6 +131,7 @@
 
       <p id="scan-status" class="homey-form-helper" role="status" aria-live="polite"></p>
       <div id="scan-summary" class="summary-grid" hidden></div>
+      <div id="device-results" class="device-grid" hidden></div>
     </div>
 
     <div class="homey-form-group">
@@ -104,6 +148,7 @@
       const scanButtons = Array.from(document.querySelectorAll('.scan-button'));
       const scanStatus = document.getElementById('scan-status');
       const scanSummary = document.getElementById('scan-summary');
+      const deviceResults = document.getElementById('device-results');
       const scanResult = document.getElementById('scan-result');
       const copyButton = document.getElementById('copy-result');
       let lastResult = null;
@@ -152,6 +197,41 @@
           });
       }
 
+      function renderDevices(advertisements) {
+        deviceResults.innerHTML = '';
+        const entries = Array.isArray(advertisements) ? advertisements : [];
+        deviceResults.hidden = entries.length === 0;
+
+        entries.forEach(entry => {
+          const rating = entry.matchRating || { level: 'none', label: 'No match', stars: 0 };
+          const card = document.createElement('div');
+          card.className = `device-card ${rating.level || 'none'}`;
+
+          const title = document.createElement('div');
+          title.className = 'device-title';
+          title.textContent = entry.localName || entry.address || entry.uuid || 'Unknown BLE device';
+
+          const badge = document.createElement('div');
+          badge.className = `confidence-badge ${rating.level || 'none'}`;
+          const stars = rating.stars > 0 ? `${'★'.repeat(rating.stars)}${'☆'.repeat(5 - rating.stars)} ` : '';
+          badge.textContent = `${stars}${entry.matchConfidence || 0} — ${rating.label || 'No match'}`;
+
+          const candidates = document.createElement('ul');
+          candidates.className = 'candidate-list';
+          (entry.parserCandidates || []).forEach(candidate => {
+            const item = document.createElement('li');
+            item.textContent = `${candidate.parserId || 'unknown parser'}: ${candidate.confidence || 0}`;
+            if (candidate.reason) item.title = candidate.reason;
+            candidates.appendChild(item);
+          });
+
+          card.appendChild(title);
+          card.appendChild(badge);
+          card.appendChild(candidates);
+          deviceResults.appendChild(card);
+        });
+      }
+
       function fallbackCopyText(text) {
         const textarea = document.createElement('textarea');
         textarea.value = text;
@@ -190,6 +270,7 @@
           setScanning(true);
           scanStatus.textContent = 'Scanning for BLE advertisements…';
           scanSummary.hidden = true;
+          deviceResults.hidden = true;
           scanResult.hidden = true;
           copyButton.disabled = true;
 
@@ -207,6 +288,7 @@
             const total = result && typeof result.total === 'number' ? result.total : count;
             scanStatus.textContent = `Scan completed. ${count} of ${total} advertisement(s) were written to the app log.`;
             renderSummary(result?.groups);
+            renderDevices(result?.advertisements);
             scanResult.textContent = JSON.stringify(result, null, 2);
             scanResult.hidden = false;
             copyButton.disabled = false;

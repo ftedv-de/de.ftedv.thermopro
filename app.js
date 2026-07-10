@@ -5,6 +5,7 @@ const ParserRegistry = require('./lib/ParserRegistry');
 const ThermoBeaconParser = require('./lib/parsers/ThermoBeaconParser');
 const ThermoProParser = require('./lib/parsers/ThermoProParser');
 const MiFloraParser = require('./lib/parsers/MiFloraParser');
+const GoveeParser = require('./lib/parsers/GoveeParser');
 const {
   getDeviceKey,
   summarizeAdvertisement,
@@ -22,6 +23,7 @@ module.exports = class ClimateSensorsApp extends Homey.App {
       ThermoBeaconParser,
       ThermoProParser,
       MiFloraParser,
+      GoveeParser,
     ]);
 
     this.scanTimer = this.homey.setInterval(async () => {
@@ -118,10 +120,25 @@ module.exports = class ClimateSensorsApp extends Homey.App {
     return this.refreshBleAdvertisements({ dispatch: false });
   }
 
+  getDiagnosticGroup(entry) {
+    if (entry.matchedDriver === 'ThermoBeaconDriver') return 'ThermoBeacon';
+    if (entry.matchedDriver === 'ThermoProTHDriver') return 'ThermoPro';
+    if (entry.matchedDriver === 'MiFloraDriver') return 'MiBeacon / MiFlora';
+    if (entry.matchedDriver === 'GoveeTHDriver') return 'Govee';
+
+    const name = String(entry.localName || '').toUpperCase();
+    const shortServices = entry.serviceUuidsShort || [];
+    if (name.startsWith('GOVEE_') || name.startsWith('GVH') || shortServices.includes('EC88')) return 'Govee';
+    if (name.startsWith('TP')) return 'ThermoPro';
+    if (name.includes('THERMOBEACON') || shortServices.includes('FFF0')) return 'ThermoBeacon';
+    if (shortServices.includes('FE95')) return 'MiBeacon / MiFlora';
+    return 'Unknown';
+  }
+
   buildBleDiagnosticEntry(advertisement, index) {
     const decoded = this.parserRegistry.parse(advertisement);
-
-    return {
+    const parserCandidates = this.parserRegistry.getParserCandidates(advertisement, { includeZero: false });
+    const entry = {
       index,
       ...summarizeAdvertisement(advertisement),
       matched: Boolean(decoded),
@@ -129,7 +146,31 @@ module.exports = class ClimateSensorsApp extends Homey.App {
       matchedDriver: decoded?.driverId || null,
       matchConfidence: decoded?.matchConfidence || 0,
       matchReason: decoded?.matchReason || null,
+      parserCandidates,
     };
+
+    entry.group = this.getDiagnosticGroup(entry);
+    return entry;
+  }
+
+  buildDiagnosticGroups(entries) {
+    const groups = {};
+
+    for (const entry of entries) {
+      if (!groups[entry.group]) {
+        groups[entry.group] = {
+          total: 0,
+          matched: 0,
+          unknown: 0,
+        };
+      }
+
+      groups[entry.group].total += 1;
+      if (entry.matched) groups[entry.group].matched += 1;
+      else groups[entry.group].unknown += 1;
+    }
+
+    return groups;
   }
 
   async logBleScan(mode = 'all') {
@@ -144,9 +185,12 @@ module.exports = class ClimateSensorsApp extends Homey.App {
       return true;
     });
 
+    const groups = this.buildDiagnosticGroups(entries);
+
     this.log(
       `Manual BLE ${mode} scan found ${filteredEntries.length} matching advertisement(s) `
       + `out of ${advertisements.length} unique advertisement(s)`,
+      { groups },
     );
 
     filteredEntries.forEach((entry, index) => {
@@ -158,6 +202,7 @@ module.exports = class ClimateSensorsApp extends Homey.App {
       count: filteredEntries.length,
       total: advertisements.length,
       timestamp: new Date().toISOString(),
+      groups,
       advertisements: filteredEntries,
     };
   }

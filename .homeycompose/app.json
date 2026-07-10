@@ -1,19 +1,39 @@
 {
   "id": "de.ftedv.thermopro",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "compatibility": ">=12.4.0",
   "sdk": 3,
   "runtime": "nodejs",
-  "brandColor": "#ee3947",
+  "brandColor": "#4aa3df",
   "platforms": [
     "local"
   ],
   "name": {
-    "en": "ThermoPro"
+    "en": "BLE Climate Sensors",
+    "de": "BLE Klimasensoren"
   },
   "description": {
-    "en": "Real-Time Temperature & Humidity Monitoring",
-    "de": "Echtzeit Temperatur & Luftfeuchte Überwachung"
+    "en": "Adds support for various BLE climate sensors e.g. temperature, humidity and more",
+    "de": "Unterstützt verschiedene BLE Klimasensoren wie z.B. Temperatur, Luftfeuchte und mehr"
+  },
+  "tags": {
+    "en": [
+      "BLE",
+      "ThermoBeacon",
+      "ThermoPro",
+      "Lanyard",
+      "Temperature",
+      "Humidity",
+      "TDS",
+      "Lux",
+      "TP350",
+      "TP351",
+      "TP357S",
+      "TP357",
+      "TP358",
+      "TP359",
+      "TP393"
+    ]
   },
   "category": [
     "climate"
@@ -30,8 +50,8 @@
     "name": "Florian Trück",
     "email": "ftrueck@gmail.com"
   },
-  "support": "https://github.com/ftedv-de/de.ftedv.thermopro/issues",
-  "homeyCommunityTopicId": 154949,
+  "support": "https://github.com/ftedv-de/de.ftedv.climatesensors/issues",
+  "homeyCommunityTopicId": 156903,
   "contributing": {
     "donate": {
       "paypal": {

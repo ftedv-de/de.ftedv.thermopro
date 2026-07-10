@@ -1,15 +1,42 @@
 {
   "name": {
-    "en": "ThermoPro / TempPro"
+    "en": "ThermoBeacon Sensor"
   },
   "class": "sensor",
   "capabilities": [
     "measure_temperature",
     "measure_humidity",
+    "measure_voltage",
     "measure_signal_strength",
     "measure_battery",
-    "alarm_battery"
+    "alarm_battery",
+    "alarm_generic"
   ],
+  "capabilitiesOptions": {
+    "measure_temperature": {
+      "uiComponent": "sensor",
+      "title": {
+        "en": "Temperature",
+        "de": "Temperatur"
+      }
+    },
+    "alarm_generic": {
+      "title": {
+        "en": "Button",
+        "de": "Taste"
+      }
+    }
+  },
+  "ui": {
+    "components": [
+      {
+        "id": "sensor",
+        "capabilities": [
+          "measure_temperature"
+        ]
+      }
+    ]
+  },
   "settings": [
     {
       "id": "ble_address",
@@ -42,6 +69,16 @@
       "readonly": true
     },
     {
+      "id": "device_type",
+      "type": "text",
+      "label": {
+        "en": "Device Type",
+        "de": "Gerätetyp"
+      },
+      "value": "",
+      "readonly": true
+    },
+    {
       "id": "service_uuid",
       "type": "text",
       "label": {
@@ -65,7 +102,7 @@
   },
   "energy": {
     "batteries": [
-      "AAA"
+      "OTHER"
     ]
   },
   "pair": [

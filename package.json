@@ -1,8 +1,8 @@
 {
-  "name": "de.ftedv.thermopro",
+  "name": "de.ftedv.climatesensors",
   "version": "1.0.0",
   "main": "app.js",
-  "brandColor": "#ee3947",
+  "brandColor": "#4aa3df",
   "scripts": {
     "lint": "eslint --ext .js,.ts --ignore-path .gitignore ."
   },

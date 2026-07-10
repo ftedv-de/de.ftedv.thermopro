@@ -1,14 +1,18 @@
-This app adds support for ThermoPro (aka TempPro) BLE Thermo-Hygrometers.
+Diese APP adds support for Bluetooth Low Energy (BLE) sensors.
 
-The supported models are:
-- TP350
-- TP357
-- TP357S
-- TP358
-- TP359
-- TP393
+Supported device types:
+- Lanyard style BLE Hygrometer (various names and vendors)
+- TempPro BLE Thermo-Hygrometer (various models)
+
+TempPro devices known to work:
+- TP350, TP351, TP357, TP357S, TP358, TP359, TP393
+- Other devices using the same protocol may work as well
 
 Installation:
-The installation is quite simple and follows standard procedures.
-Install the app and wait a few seconds until you are certain your device sent an BLE anouncement.
-Then add a new device, select this app and wait for it to be found by your homey.
+When adding a new device select this app and choose the appropriate driver.
+The devices that where found will be shown in the list.
+
+Tipps:
+If a device was not listed it may be that it was not sending data at that time.
+In this case check its battery and try to add the device again.
+If the device still is missing you can leave a note in the community post of this app.

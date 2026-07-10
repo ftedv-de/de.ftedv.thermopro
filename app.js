@@ -14,6 +14,7 @@ module.exports = class ClimateSensorsApp extends Homey.App {
 
     this.bleAdvertisements = [];
     this.devicesByDriver = new Map();
+    this.bleOperationQueue = Promise.resolve();
     this.parserRegistry = new ParserRegistry([
       ThermoBeaconParser,
       ThermoProParser,
@@ -49,6 +50,15 @@ module.exports = class ClimateSensorsApp extends Homey.App {
     return this.parserRegistry;
   }
 
+  runBleOperation(operation) {
+    const result = this.bleOperationQueue.then(operation, operation);
+
+    // Keep the queue usable after a failed operation while still returning the
+    // original rejection to the caller.
+    this.bleOperationQueue = result.catch(() => undefined);
+    return result;
+  }
+
   registerClimateDevice(driverId, device) {
     if (!this.devicesByDriver.has(driverId)) {
       this.devicesByDriver.set(driverId, new Map());
@@ -71,31 +81,33 @@ module.exports = class ClimateSensorsApp extends Homey.App {
   }
 
   async refreshBleAdvertisements({ dispatch = true } = {}) {
-    this.debug('Central BLE advertisement refresh started', { dispatch });
+    return this.runBleOperation(async () => {
+      this.debug('Central BLE advertisement refresh started', { dispatch });
 
-    const advertisements = await this.homey.ble.discover();
-    const map = new Map();
+      const advertisements = await this.homey.ble.discover();
+      const map = new Map();
 
-    for (const adv of advertisements) {
-      const key = getDeviceKey(adv) || adv.localName;
-      if (!key) continue;
-      map.set(key, adv);
-    }
+      for (const adv of advertisements) {
+        const key = getDeviceKey(adv) || adv.localName;
+        if (!key) continue;
+        map.set(key, adv);
+      }
 
-    this.bleAdvertisements = Array.from(map.values());
+      this.bleAdvertisements = Array.from(map.values());
 
-    this.lastScanInfo = {
-      timestamp: new Date().toISOString(),
-      total: advertisements.length,
-      unique: this.bleAdvertisements.length,
-    };
+      this.lastScanInfo = {
+        timestamp: new Date().toISOString(),
+        total: advertisements.length,
+        unique: this.bleAdvertisements.length,
+      };
 
-    if (dispatch) {
-      await this.dispatchAdvertisements(this.bleAdvertisements);
-    }
+      if (dispatch) {
+        await this.dispatchAdvertisements(this.bleAdvertisements);
+      }
 
-    this.debug('Central BLE advertisement refresh completed', this.lastScanInfo);
-    return this.bleAdvertisements;
+      this.debug('Central BLE advertisement refresh completed', this.lastScanInfo);
+      return this.bleAdvertisements;
+    });
   }
 
   async scanBle() {

@@ -103,6 +103,39 @@
         });
       }
 
+      function fallbackCopyText(text) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        textarea.style.top = '0';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+
+        let copied = false;
+        try {
+          copied = document.execCommand('copy');
+        } finally {
+          document.body.removeChild(textarea);
+        }
+
+        return copied;
+      }
+
+      async function copyText(text) {
+        if (
+          navigator.clipboard &&
+          typeof navigator.clipboard.writeText === 'function'
+        ) {
+          await navigator.clipboard.writeText(text);
+          return true;
+        }
+
+        return fallbackCopyText(text);
+      }
+
       scanButtons.forEach(button => {
         button.addEventListener('click', () => {
           setScanning(true);
@@ -133,11 +166,16 @@
       copyButton.addEventListener('click', async () => {
         if (!lastResult) return;
 
+        const text = JSON.stringify(lastResult, null, 2);
+
         try {
-          await navigator.clipboard.writeText(JSON.stringify(lastResult, null, 2));
+          const copied = await copyText(text);
+          if (!copied) throw new Error('Clipboard access is not available in this Homey view.');
           scanStatus.textContent = 'BLE scan result copied to the clipboard.';
         } catch (error) {
-          Homey.alert(error);
+          scanStatus.textContent = 'Could not copy automatically. Select the JSON result below and copy it manually.';
+          scanResult.hidden = false;
+          Homey.alert(error.message || error);
         }
       });
 

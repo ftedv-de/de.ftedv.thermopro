@@ -40,6 +40,19 @@
   },
   "settings": [
     {
+      "id": "initial_gatt_read",
+      "type": "checkbox",
+      "label": {
+        "en": "Read all values once after pairing",
+        "de": "Nach dem Hinzufügen einmal alle Werte auslesen"
+      },
+      "hint": {
+        "en": "Creates one short GATT connection after pairing. All later updates remain passive via BLE advertisements.",
+        "de": "Stellt nach dem Hinzufügen einmal kurz eine GATT-Verbindung her. Alle späteren Aktualisierungen erfolgen passiv über BLE-Advertisements."
+      },
+      "value": true
+    },
+    {
       "id": "ble_address",
       "type": "text",
       "label": {

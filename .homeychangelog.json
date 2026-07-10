@@ -19,5 +19,8 @@
   },
   "1.4.2": {
     "en": "Changed support URL and community topic id"
+  },
+  "1.4.3": {
+    "en": "Fixed community topic id"
   }
 }

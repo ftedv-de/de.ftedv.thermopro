@@ -4,6 +4,24 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script type="text/javascript" src="/homey.js" data-origin="settings"></script>
+  <style>
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    pre {
+      max-height: 320px;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      padding: 12px;
+      border-radius: 8px;
+      background: rgba(127, 127, 127, 0.12);
+      font-size: 12px;
+    }
+  </style>
 </head>
 <body>
   <header class="homey-header">
@@ -24,23 +42,45 @@
   </fieldset>
 
   <fieldset class="homey-form-fieldset">
-    <legend class="homey-form-legend">BLE scan</legend>
+    <legend class="homey-form-legend">BLE diagnostics</legend>
 
     <div class="homey-form-group">
       <p class="homey-form-helper">
-        Runs one central BLE scan and writes every detected advertisement to the app log.
-        No connection to the devices is established.
+        Runs one passive central BLE scan. No connection to the devices is established.
+        The selected advertisements are written to the app log and shown below.
       </p>
-      <button id="scan-ble" class="homey-button-primary" type="button">Run BLE scan</button>
+
+      <div class="button-row">
+        <button class="homey-button-primary scan-button" type="button" data-path="/scanBle">
+          Scan all devices
+        </button>
+        <button class="homey-button-secondary scan-button" type="button" data-path="/scanBle/matched">
+          Show matched devices
+        </button>
+        <button class="homey-button-secondary scan-button" type="button" data-path="/scanBle/unknown">
+          Show unknown devices
+        </button>
+      </div>
+
       <p id="scan-status" class="homey-form-helper" role="status" aria-live="polite"></p>
+    </div>
+
+    <div class="homey-form-group">
+      <button id="copy-result" class="homey-button-secondary" type="button" disabled>
+        Copy result as JSON
+      </button>
+      <pre id="scan-result" hidden></pre>
     </div>
   </fieldset>
 
   <script>
     function onHomeyReady(Homey) {
       const debugElement = document.getElementById('debug');
-      const scanButton = document.getElementById('scan-ble');
+      const scanButtons = Array.from(document.querySelectorAll('.scan-button'));
       const scanStatus = document.getElementById('scan-status');
+      const scanResult = document.getElementById('scan-result');
+      const copyButton = document.getElementById('copy-result');
+      let lastResult = null;
 
       Homey.get('debug', (error, value) => {
         if (error) {
@@ -57,22 +97,48 @@
         });
       });
 
-      scanButton.addEventListener('click', () => {
-        scanButton.disabled = true;
-        scanStatus.textContent = 'Scanning for BLE advertisements…';
-
-        Homey.api('GET', '/scanBle', {}, (error, result) => {
-          scanButton.disabled = false;
-
-          if (error) {
-            scanStatus.textContent = `BLE scan failed: ${error.message || error}`;
-            Homey.alert(error);
-            return;
-          }
-
-          const count = result && typeof result.count === 'number' ? result.count : 0;
-          scanStatus.textContent = `Scan completed. ${count} advertisement(s) were written to the app log.`;
+      function setScanning(scanning) {
+        scanButtons.forEach(button => {
+          button.disabled = scanning;
         });
+      }
+
+      scanButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          setScanning(true);
+          scanStatus.textContent = 'Scanning for BLE advertisements…';
+          scanResult.hidden = true;
+          copyButton.disabled = true;
+
+          Homey.api('GET', button.dataset.path, {}, (error, result) => {
+            setScanning(false);
+
+            if (error) {
+              scanStatus.textContent = `BLE scan failed: ${error.message || error}`;
+              Homey.alert(error);
+              return;
+            }
+
+            lastResult = result;
+            const count = result && typeof result.count === 'number' ? result.count : 0;
+            const total = result && typeof result.total === 'number' ? result.total : count;
+            scanStatus.textContent = `Scan completed. ${count} of ${total} advertisement(s) were written to the app log.`;
+            scanResult.textContent = JSON.stringify(result, null, 2);
+            scanResult.hidden = false;
+            copyButton.disabled = false;
+          });
+        });
+      });
+
+      copyButton.addEventListener('click', async () => {
+        if (!lastResult) return;
+
+        try {
+          await navigator.clipboard.writeText(JSON.stringify(lastResult, null, 2));
+          scanStatus.textContent = 'BLE scan result copied to the clipboard.';
+        } catch (error) {
+          Homey.alert(error);
+        }
       });
 
       Homey.ready();

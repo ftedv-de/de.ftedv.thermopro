@@ -1,0 +1,80 @@
+{
+  "name": {
+    "en": "Govee Thermo-Hygrometer",
+    "de": "Govee Thermo-Hygrometer"
+  },
+  "class": "sensor",
+  "capabilities": [
+    "measure_temperature",
+    "measure_humidity",
+    "measure_signal_strength",
+    "measure_battery",
+    "alarm_battery"
+  ],
+  "settings": [
+    {
+      "id": "ble_address",
+      "type": "text",
+      "label": {
+        "en": "BLE Address",
+        "de": "BLE-Adresse"
+      },
+      "value": "",
+      "readonly": true
+    },
+    {
+      "id": "ble_uuid",
+      "type": "text",
+      "label": {
+        "en": "BLE UUID",
+        "de": "BLE-UUID"
+      },
+      "value": "",
+      "readonly": true
+    },
+    {
+      "id": "model_name",
+      "type": "text",
+      "label": {
+        "en": "Model",
+        "de": "Modell"
+      },
+      "value": "",
+      "readonly": true
+    },
+    {
+      "id": "service_uuid",
+      "type": "text",
+      "label": {
+        "en": "Service UUID",
+        "de": "Service-UUID"
+      },
+      "value": "",
+      "readonly": true
+    }
+  ],
+  "platforms": [
+    "local"
+  ],
+  "connectivity": [
+    "ble"
+  ],
+  "energy": {
+    "batteries": [
+      "AAA"
+    ]
+  },
+  "pair": [
+    {
+      "id": "list_devices",
+      "template": "list_devices",
+      "navigation": {
+        "next": "add_devices"
+      }
+    },
+    {
+      "id": "add_devices",
+      "template": "add_devices"
+    }
+  ]
+}

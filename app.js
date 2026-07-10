@@ -4,6 +4,7 @@ const Homey = require('homey');
 const ParserRegistry = require('./lib/ParserRegistry');
 const ThermoBeaconParser = require('./lib/parsers/ThermoBeaconParser');
 const ThermoProParser = require('./lib/parsers/ThermoProParser');
+const MiFloraParser = require('./lib/parsers/MiFloraParser');
 const { getDeviceKey } = require('./lib/AdvertisementUtils');
 
 module.exports = class ClimateSensorsApp extends Homey.App {
@@ -16,6 +17,7 @@ module.exports = class ClimateSensorsApp extends Homey.App {
     this.parserRegistry = new ParserRegistry([
       ThermoBeaconParser,
       ThermoProParser,
+      MiFloraParser,
     ]);
 
     this.scanTimer = this.homey.setInterval(async () => {

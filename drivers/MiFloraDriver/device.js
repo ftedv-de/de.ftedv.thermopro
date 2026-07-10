@@ -9,10 +9,6 @@ const REALTIME_CHARACTERISTIC_UUID = '00001a0000001000800000805f9b34fb';
 const DATA_CHARACTERISTIC_UUID = '00001a0100001000800000805f9b34fb';
 const FIRMWARE_CHARACTERISTIC_UUID = '00001a0200001000800000805f9b34fb';
 
-const INITIAL_GATT_DELAY_MS = 2500;
-const INITIAL_GATT_ATTEMPTS = 3;
-const INITIAL_GATT_RETRY_DELAY_MS = 2000;
-
 function normalizeUuid(uuid = '') {
   return String(uuid).toLowerCase().replace(/[^0-9a-f]/g, '');
 }
@@ -27,6 +23,15 @@ module.exports = class MiFloraDevice extends BaseClimateDevice {
     return 'MiFlora';
   }
 
+  supportsInitialGattRead() {
+    return true;
+  }
+
+  async performInitialGattRead() {
+    await this.readInitialValuesViaGatt();
+    await this.setStoreValue('initialGattReadSucceeded', true);
+  }
+
   sleep(milliseconds) {
     return new Promise(resolve => this.homey.setTimeout(resolve, milliseconds));
   }
@@ -39,84 +44,17 @@ module.exports = class MiFloraDevice extends BaseClimateDevice {
   }
 
   async applyAdditionalCapabilities(_adv, decoded) {
-    if (
-      this.hasCapability('measure_luminance') &&
-      typeof decoded.luminance === 'number'
-    ) {
+    if (this.hasCapability('measure_luminance') && typeof decoded.luminance === 'number') {
       await this.setCapabilityValue('measure_luminance', decoded.luminance);
     }
 
-    if (
-      this.hasCapability('measure_moisture') &&
-      typeof decoded.moisture === 'number'
-    ) {
+    if (this.hasCapability('measure_moisture') && typeof decoded.moisture === 'number') {
       await this.setCapabilityValue('measure_moisture', decoded.moisture);
     }
 
-    if (
-      this.hasCapability('measure_conductivity') &&
-      typeof decoded.conductivity === 'number'
-    ) {
+    if (this.hasCapability('measure_conductivity') && typeof decoded.conductivity === 'number') {
       await this.setCapabilityValue('measure_conductivity', decoded.conductivity);
     }
-  }
-
-  async onAdded() {
-    // Give Homey's pairing process and BLE stack a moment to settle before the
-    // one-time active connection. All later updates remain advertisement-only.
-    await this.sleep(INITIAL_GATT_DELAY_MS);
-
-    try {
-      await this.homey.app.runBleOperation(async () => {
-        await this.readInitialValuesViaGattWithRetry();
-      });
-
-      await this.setStoreValue('initialGattReadSucceeded', true);
-    } catch (err) {
-      // Pairing must succeed even when the sensor is temporarily unreachable.
-      // Advertisement updates will populate the values later.
-      this.homey.app.reportError('Initial MiFlora GATT read failed', err, {
-        device: this.getName(),
-        dataId: this.getData()?.id,
-        address: this.getStoreValue('address'),
-        peripheralUuid: this.getStoreValue('peripheralUuid'),
-        attempts: INITIAL_GATT_ATTEMPTS,
-      });
-    } finally {
-      await this.setStoreValue('initialGattReadAttempted', true);
-    }
-  }
-
-  async readInitialValuesViaGattWithRetry() {
-    let lastError;
-
-    for (let attempt = 1; attempt <= INITIAL_GATT_ATTEMPTS; attempt += 1) {
-      try {
-        this.homey.app.debug('Starting initial MiFlora GATT read', {
-          device: this.getName(),
-          attempt,
-          attempts: INITIAL_GATT_ATTEMPTS,
-        });
-
-        await this.readInitialValuesViaGatt();
-        return;
-      } catch (err) {
-        lastError = err;
-
-        this.homey.app.debug('Initial MiFlora GATT attempt failed', {
-          device: this.getName(),
-          attempt,
-          attempts: INITIAL_GATT_ATTEMPTS,
-          error: err?.message,
-        });
-
-        if (attempt < INITIAL_GATT_ATTEMPTS) {
-          await this.sleep(INITIAL_GATT_RETRY_DELAY_MS);
-        }
-      }
-    }
-
-    throw lastError || new Error('Initial MiFlora GATT read failed');
   }
 
   async findAdvertisementForGatt() {
@@ -142,21 +80,15 @@ module.exports = class MiFloraDevice extends BaseClimateDevice {
   }
 
   async readInitialValuesViaGatt() {
-    // Resolve a fresh advertisement for every retry. Reusing an advertisement
-    // object after a failed connection can leave Homey's peripheral stale.
     const advertisement = await this.findAdvertisementForGatt();
     let peripheral;
 
     try {
       peripheral = await advertisement.connect();
       const services = await peripheral.discoverServices();
-      const dataService = services.find(service => (
-        normalizeUuid(service.uuid) === DATA_SERVICE_UUID
-      ));
+      const dataService = services.find(service => normalizeUuid(service.uuid) === DATA_SERVICE_UUID);
 
-      if (!dataService) {
-        throw new Error('MiFlora GATT service 0x1204 was not found');
-      }
+      if (!dataService) throw new Error('MiFlora GATT service 0x1204 was not found');
 
       const characteristics = await dataService.discoverCharacteristics();
       const realtime = characteristics.find(characteristic => (
@@ -249,9 +181,7 @@ module.exports = class MiFloraDevice extends BaseClimateDevice {
       await this.setCapabilityValue('alarm_battery', battery <= 20);
     }
 
-    if (firmwareVersion) {
-      await this.setStoreValue('firmwareVersion', firmwareVersion);
-    }
+    if (firmwareVersion) await this.setStoreValue('firmwareVersion', firmwareVersion);
 
     this.homey.app.debug('Initial MiFlora firmware values', {
       device: this.getName(),

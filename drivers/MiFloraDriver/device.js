@@ -28,8 +28,19 @@ module.exports = class MiFloraDevice extends BaseClimateDevice {
   }
 
   async performInitialGattRead() {
-    await this.readInitialValuesViaGatt();
-    await this.setStoreValue('initialGattReadSucceeded', true);
+    const succeeded = await this.readInitialValuesViaGatt();
+    if (!succeeded) return false;
+
+    try {
+      await this.setStoreValue('initialGattReadSucceeded', true);
+    } catch (err) {
+      this.homey.app.debug('Could not store successful MiFlora GATT state', {
+        device: this.getName(),
+        error: err?.message,
+      });
+    }
+
+    return true;
   }
 
   sleep(milliseconds) {
@@ -66,21 +77,33 @@ module.exports = class MiFloraDevice extends BaseClimateDevice {
       .map(value => String(value || ''))
       .filter((value, index, values) => value && values.indexOf(value) === index);
 
-    let lastError;
+    if (identifiers.length === 0) {
+      this.homey.app.debug('No BLE identifier is available for the MiFlora GATT interview', {
+        device: this.getName(),
+      });
+      return null;
+    }
 
     for (const identifier of identifiers) {
       try {
-        return await this.homey.ble.find(identifier, 10000);
+        const advertisement = await this.homey.ble.find(identifier, 10000);
+        if (advertisement) return advertisement;
       } catch (err) {
-        lastError = err;
+        this.homey.app.debug('MiFlora advertisement lookup failed', {
+          device: this.getName(),
+          identifier,
+          error: err?.message,
+        });
       }
     }
 
-    throw lastError || new Error('No BLE identifier is available for the MiFlora device');
+    return null;
   }
 
   async readInitialValuesViaGatt() {
     const advertisement = await this.findAdvertisementForGatt();
+    if (!advertisement) return false;
+
     let peripheral;
 
     try {
@@ -88,7 +111,14 @@ module.exports = class MiFloraDevice extends BaseClimateDevice {
       const services = await peripheral.discoverServices();
       const dataService = services.find(service => normalizeUuid(service.uuid) === DATA_SERVICE_UUID);
 
-      if (!dataService) throw new Error('MiFlora GATT service 0x1204 was not found');
+      if (!dataService) {
+        this.homey.app.debug('MiFlora GATT service 0x1204 was not found', {
+          device: this.getName(),
+          address: advertisement.address,
+          uuid: advertisement.uuid,
+        });
+        return false;
+      }
 
       const characteristics = await dataService.discoverCharacteristics();
       const realtime = characteristics.find(characteristic => (
@@ -101,18 +131,33 @@ module.exports = class MiFloraDevice extends BaseClimateDevice {
         normalizeUuid(characteristic.uuid) === FIRMWARE_CHARACTERISTIC_UUID
       ));
 
-      if (!realtime) throw new Error('MiFlora realtime characteristic 0x1A00 was not found');
-      if (!sensorDataCharacteristic) throw new Error('MiFlora data characteristic 0x1A01 was not found');
+      if (!realtime || !sensorDataCharacteristic) {
+        this.homey.app.debug('Required MiFlora GATT characteristics were not found', {
+          device: this.getName(),
+          realtimeFound: Boolean(realtime),
+          sensorDataFound: Boolean(sensorDataCharacteristic),
+          firmwareFound: Boolean(firmwareCharacteristic),
+        });
+        return false;
+      }
 
       await realtime.write(Buffer.from([0xa0, 0x1f]));
       await this.sleep(200);
 
       const sensorData = await sensorDataCharacteristic.read();
-      await this.applyInitialSensorData(sensorData);
+      const sensorDataApplied = await this.applyInitialSensorData(sensorData);
+      if (!sensorDataApplied) return false;
 
       if (firmwareCharacteristic) {
-        const firmwareData = await firmwareCharacteristic.read();
-        await this.applyInitialFirmwareData(firmwareData);
+        try {
+          const firmwareData = await firmwareCharacteristic.read();
+          await this.applyInitialFirmwareData(firmwareData);
+        } catch (err) {
+          this.homey.app.debug('Optional MiFlora firmware read failed', {
+            device: this.getName(),
+            error: err?.message,
+          });
+        }
       }
 
       this.homey.app.debug('Initial MiFlora GATT read completed', {
@@ -120,6 +165,16 @@ module.exports = class MiFloraDevice extends BaseClimateDevice {
         address: advertisement.address,
         uuid: advertisement.uuid,
       });
+
+      return true;
+    } catch (err) {
+      this.homey.app.debug('Initial MiFlora GATT communication failed', {
+        device: this.getName(),
+        address: advertisement.address,
+        uuid: advertisement.uuid,
+        error: err?.message,
+      });
+      return false;
     } finally {
       if (peripheral?.isConnected) {
         try {
@@ -136,7 +191,11 @@ module.exports = class MiFloraDevice extends BaseClimateDevice {
 
   async applyInitialSensorData(sensorData) {
     if (!Buffer.isBuffer(sensorData) || sensorData.length < 10) {
-      throw new Error(`Unexpected MiFlora sensor data length: ${sensorData?.length || 0}`);
+      this.homey.app.debug('Unexpected MiFlora sensor data length', {
+        device: this.getName(),
+        length: sensorData?.length || 0,
+      });
+      return false;
     }
 
     const values = {
@@ -146,17 +205,25 @@ module.exports = class MiFloraDevice extends BaseClimateDevice {
       conductivity: sensorData.readUInt16LE(8),
     };
 
-    if (this.hasCapability('measure_temperature')) {
-      await this.setCapabilityValue('measure_temperature', values.temperature);
-    }
-    if (this.hasCapability('measure_luminance')) {
-      await this.setCapabilityValue('measure_luminance', values.luminance);
-    }
-    if (this.hasCapability('measure_moisture')) {
-      await this.setCapabilityValue('measure_moisture', values.moisture);
-    }
-    if (this.hasCapability('measure_conductivity')) {
-      await this.setCapabilityValue('measure_conductivity', values.conductivity);
+    try {
+      if (this.hasCapability('measure_temperature')) {
+        await this.setCapabilityValue('measure_temperature', values.temperature);
+      }
+      if (this.hasCapability('measure_luminance')) {
+        await this.setCapabilityValue('measure_luminance', values.luminance);
+      }
+      if (this.hasCapability('measure_moisture')) {
+        await this.setCapabilityValue('measure_moisture', values.moisture);
+      }
+      if (this.hasCapability('measure_conductivity')) {
+        await this.setCapabilityValue('measure_conductivity', values.conductivity);
+      }
+    } catch (err) {
+      this.homey.app.debug('Could not apply initial MiFlora sensor values', {
+        device: this.getName(),
+        error: err?.message,
+      });
+      return false;
     }
 
     this.homey.app.debug('Initial MiFlora sensor values', {
@@ -164,24 +231,40 @@ module.exports = class MiFloraDevice extends BaseClimateDevice {
       ...values,
       raw: sensorData.toString('hex'),
     });
+
+    return true;
   }
 
   async applyInitialFirmwareData(firmwareData) {
-    if (!Buffer.isBuffer(firmwareData) || firmwareData.length < 1) return;
+    if (!Buffer.isBuffer(firmwareData) || firmwareData.length < 1) {
+      this.homey.app.debug('Unexpected MiFlora firmware data', {
+        device: this.getName(),
+        length: firmwareData?.length || 0,
+      });
+      return false;
+    }
 
     const battery = firmwareData.readUInt8(0);
     const firmwareVersion = firmwareData.length > 2
       ? firmwareData.toString('ascii', 2).replace(/\0+$/g, '')
       : '';
 
-    if (this.hasCapability('measure_battery')) {
-      await this.setCapabilityValue('measure_battery', battery);
-    }
-    if (this.hasCapability('alarm_battery')) {
-      await this.setCapabilityValue('alarm_battery', battery <= 20);
-    }
+    try {
+      if (this.hasCapability('measure_battery')) {
+        await this.setCapabilityValue('measure_battery', battery);
+      }
+      if (this.hasCapability('alarm_battery')) {
+        await this.setCapabilityValue('alarm_battery', battery <= 20);
+      }
 
-    if (firmwareVersion) await this.setStoreValue('firmwareVersion', firmwareVersion);
+      if (firmwareVersion) await this.setStoreValue('firmwareVersion', firmwareVersion);
+    } catch (err) {
+      this.homey.app.debug('Could not apply initial MiFlora firmware values', {
+        device: this.getName(),
+        error: err?.message,
+      });
+      return false;
+    }
 
     this.homey.app.debug('Initial MiFlora firmware values', {
       device: this.getName(),
@@ -189,6 +272,8 @@ module.exports = class MiFloraDevice extends BaseClimateDevice {
       firmwareVersion,
       raw: firmwareData.toString('hex'),
     });
+
+    return true;
   }
 
 };

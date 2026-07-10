@@ -1,0 +1,17 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Soil Conductivity",
+    "de": "Bodenleitfähigkeit"
+  },
+  "getable": true,
+  "setable": false,
+  "insights": true,
+  "units": {
+    "en": "µS/cm",
+    "de": "µS/cm"
+  },
+  "decimals": 0,
+  "min": 0,
+  "max": 10000
+}

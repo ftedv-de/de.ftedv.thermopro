@@ -1,4 +1,4 @@
-Diese APP adds support for Bluetooth Low Energy (BLE) sensors.
+This APP adds support for Bluetooth Low Energy (BLE) sensors.
 
 Supported device types:
 - Lanyard style BLE Hygrometer (various names and vendors)

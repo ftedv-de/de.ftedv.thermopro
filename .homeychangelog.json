@@ -13,5 +13,11 @@
   },
   "1.4.0": {
     "en": "Complete rework of app, added other BLE devices"
+  },
+  "1.4.1": {
+    "en": "Changed support URL and community topic"
+  },
+  "1.4.2": {
+    "en": "Changed support URL and community topic id"
   }
 }

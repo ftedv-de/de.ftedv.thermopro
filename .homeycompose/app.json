@@ -1,6 +1,6 @@
 {
   "id": "de.ftedv.thermopro",
-  "version": "1.4.0",
+  "version": "1.4.2",
   "compatibility": ">=12.4.0",
   "sdk": 3,
   "runtime": "nodejs",
@@ -50,8 +50,8 @@
     "name": "Florian Trück",
     "email": "ftrueck@gmail.com"
   },
-  "support": "https://github.com/ftedv-de/de.ftedv.climatesensors/issues",
-  "homeyCommunityTopicId": 156903,
+  "support": "https://community.homey.app/t/app-pro-climate-sensors/156903",
+  "homeyCommunityTopicId": 154949,
   "contributing": {
     "donate": {
       "paypal": {

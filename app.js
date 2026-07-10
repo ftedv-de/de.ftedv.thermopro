@@ -118,25 +118,47 @@ module.exports = class ClimateSensorsApp extends Homey.App {
     return this.refreshBleAdvertisements({ dispatch: false });
   }
 
-  async logBleScan() {
+  buildBleDiagnosticEntry(advertisement, index) {
+    const decoded = this.parserRegistry.parse(advertisement);
+
+    return {
+      index,
+      ...summarizeAdvertisement(advertisement),
+      matched: Boolean(decoded),
+      matchedParser: decoded?.parserId || null,
+      matchedDriver: decoded?.driverId || null,
+      matchConfidence: decoded?.matchConfidence || 0,
+      matchReason: decoded?.matchReason || null,
+    };
+  }
+
+  async logBleScan(mode = 'all') {
     const advertisements = await this.refreshBleAdvertisements({ dispatch: false });
+    const entries = advertisements.map((advertisement, index) => (
+      this.buildBleDiagnosticEntry(advertisement, index)
+    ));
 
-    this.log(`Manual BLE scan found ${advertisements.length} unique advertisement(s)`);
+    const filteredEntries = entries.filter(entry => {
+      if (mode === 'matched') return entry.matched;
+      if (mode === 'unknown') return !entry.matched;
+      return true;
+    });
 
-    advertisements.forEach((advertisement, index) => {
-      const decoded = this.parserRegistry.parse(advertisement);
-      this.log(`BLE[${index}]`, {
-        ...summarizeAdvertisement(advertisement),
-        matchedParser: decoded?.parserId || null,
-        matchedDriver: decoded?.driverId || null,
-        matchConfidence: decoded?.matchConfidence || 0,
-        matchReason: decoded?.matchReason || null,
-      });
+    this.log(
+      `Manual BLE ${mode} scan found ${filteredEntries.length} matching advertisement(s) `
+      + `out of ${advertisements.length} unique advertisement(s)`,
+    );
+
+    filteredEntries.forEach((entry, index) => {
+      this.log(`BLE[${index}]`, entry);
     });
 
     return {
-      count: advertisements.length,
+      mode,
+      count: filteredEntries.length,
+      total: advertisements.length,
       timestamp: new Date().toISOString(),
+      advertisements: filteredEntries,
     };
   }
 
@@ -188,5 +210,4 @@ module.exports = class ClimateSensorsApp extends Homey.App {
       this.homey.clearInterval(this.scanTimer);
     }
   }
-
 };

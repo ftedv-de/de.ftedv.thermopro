@@ -6,6 +6,7 @@ const ThermoBeaconParser = require('./lib/parsers/ThermoBeaconParser');
 const ThermoProParser = require('./lib/parsers/ThermoProParser');
 const MiFloraParser = require('./lib/parsers/MiFloraParser');
 const GoveeParser = require('./lib/parsers/GoveeParser');
+const { getConfidenceRating } = require('./lib/MatchScore');
 const {
   getDeviceKey,
   summarizeAdvertisement,
@@ -137,15 +138,19 @@ module.exports = class ClimateSensorsApp extends Homey.App {
 
   buildBleDiagnosticEntry(advertisement, index) {
     const decoded = this.parserRegistry.parse(advertisement);
-    const parserCandidates = this.parserRegistry.getParserCandidates(advertisement, { includeZero: false });
+    const parserCandidates = this.parserRegistry.getParserCandidates(advertisement, { includeZero: true });
+    const bestCandidate = parserCandidates[0] || null;
+    const confidence = decoded?.matchConfidence || bestCandidate?.confidence || 0;
     const entry = {
       index,
       ...summarizeAdvertisement(advertisement),
       matched: Boolean(decoded),
       matchedParser: decoded?.parserId || null,
       matchedDriver: decoded?.driverId || null,
-      matchConfidence: decoded?.matchConfidence || 0,
-      matchReason: decoded?.matchReason || null,
+      matchConfidence: confidence,
+      matchRating: decoded?.matchRating || bestCandidate?.rating || getConfidenceRating(confidence),
+      matchReason: decoded?.matchReason || bestCandidate?.reason || null,
+      bestCandidate,
       parserCandidates,
     };
 

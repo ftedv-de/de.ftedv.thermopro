@@ -3,6 +3,8 @@ This APP adds support for Bluetooth Low Energy (BLE) sensors.
 Supported device types:
 - Lanyard style BLE Hygrometer (various names and vendors)
 - TempPro BLE Thermo-Hygrometer (various models)
+- Govee Thermo-Hygrometers
+- XiaoMi Flora Sensors
 
 TempPro devices known to work:
 - TP350, TP351, TP357, TP357S, TP358, TP359, TP393

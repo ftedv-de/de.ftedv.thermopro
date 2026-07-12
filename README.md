@@ -1,0 +1,1 @@
+[![Validate Homey App](https://github.com/ftedv-de/de.ftedv.thermopro/actions/workflows/homey-app-validate.yml/badge.svg)](https://github.com/ftedv-de/de.ftedv.thermopro/actions/workflows/homey-app-validate.yml)

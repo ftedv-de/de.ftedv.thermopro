@@ -31,5 +31,8 @@
   },
   "1.5.2": {
     "en": "Changed typo in readme"
+  },
+  "1.5.3": {
+    "en": "added visual icons, cleanup, fixes"
   }
 }

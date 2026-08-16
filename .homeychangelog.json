@@ -34,5 +34,8 @@
   },
   "1.5.3": {
     "en": "added visual icons, cleanup, fixes"
+  },
+  "1.6.0": {
+    "en": "Added MEATER probes, renamed app to resemble new situation"
   }
 }

@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "de.ftedv.thermopro",
-  "version": "1.5.3",
+  "version": "1.6.0",
   "compatibility": ">=12.4.0",
   "sdk": 3,
   "runtime": "nodejs",
@@ -10,16 +10,17 @@
     "local"
   ],
   "name": {
-    "en": "BLE Climate Sensors",
-    "de": "BLE Klimasensoren"
+    "en": "BLE Sensors",
+    "de": "BLE Sensors"
   },
   "description": {
-    "en": "Adds support for various BLE climate sensors e.g. temperature, humidity and more",
-    "de": "Unterstützt verschiedene BLE Klimasensoren wie z.B. Temperatur, Luftfeuchte und mehr"
+    "en": "Adds support for BLE sensors including climate, plant, and MEATER cooking probes",
+    "de": "Unterstützt BLE-Sensoren für Klima, Pflanzen und MEATER-Grillthermometer"
   },
   "tags": {
     "en": [
       "BLE",
+      "MEATER",
       "ThermoBeacon",
       "ThermoPro",
       "MiFlora",
@@ -171,6 +172,48 @@
         }
       ],
       "id": "GoveeTHDriver"
+    },
+    {
+      "name": {
+        "en": "MEATER probe",
+        "de": "MEATER Thermometer"
+      },
+      "class": "sensor",
+      "capabilities": [
+        "measure_meater_core_temperature",
+        "measure_meater_ambient_temperature",
+        "meater_temperature_rate",
+        "meater_target_temperature",
+        "measure_meater_estimated_time_remaining",
+        "meater_probe_rssi",
+        "meater_base_battery_voltage",
+        "measure_battery",
+        "alarm_generic"
+      ],
+      "images": {
+        "small": "/drivers/MeaterDriver/assets/images/small.png",
+        "large": "/drivers/MeaterDriver/assets/images/large.png",
+        "xlarge": "/drivers/MeaterDriver/assets/images/xlarge.png"
+      },
+      "energy": {
+        "batteries": [
+          "OTHER"
+        ]
+      },
+      "pair": [
+        {
+          "id": "list_devices",
+          "template": "list_devices",
+          "navigation": {
+            "next": "add_devices"
+          }
+        },
+        {
+          "id": "add_devices",
+          "template": "add_devices"
+        }
+      ],
+      "id": "MeaterDriver"
     },
     {
       "name": {
@@ -534,6 +577,120 @@
       "min": 0,
       "max": 10000,
       "icon": "/assets/measure_conductivity.svg"
+    },
+    "measure_meater_ambient_temperature": {
+      "title": {
+        "en": "Ambient temperature",
+        "de": "Umgebungstemperatur"
+      },
+      "type": "number",
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/icons/temperature.svg",
+      "units": {
+        "en": "°C"
+      },
+      "decimals": 1,
+      "insights": true
+    },
+    "measure_meater_core_temperature": {
+      "title": {
+        "en": "Core temperature",
+        "de": "Kerntemperatur"
+      },
+      "type": "number",
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/icons/temperature.svg",
+      "units": {
+        "en": "°C"
+      },
+      "decimals": 1,
+      "insights": true
+    },
+    "measure_meater_estimated_time_remaining": {
+      "title": {
+        "en": "Estimated time to target",
+        "de": "Geschätzte Restzeit"
+      },
+      "type": "number",
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/icons/clock.svg",
+      "units": {
+        "en": "min"
+      },
+      "decimals": 0,
+      "insights": true
+    },
+    "meater_base_battery_voltage": {
+      "title": {
+        "en": "Base battery voltage",
+        "de": "Base-Batteriespannung"
+      },
+      "type": "number",
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/icons/battery.svg",
+      "units": {
+        "en": "V"
+      },
+      "decimals": 2,
+      "insights": true
+    },
+    "meater_probe_rssi": {
+      "title": {
+        "en": "Probe signal strength",
+        "de": "Probe-Signalstärke"
+      },
+      "type": "number",
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/icons/signal.svg",
+      "units": {
+        "en": "dBm"
+      },
+      "decimals": 0,
+      "insights": true
+    },
+    "meater_target_temperature": {
+      "title": {
+        "en": "Target core temperature",
+        "de": "Ziel-Kerntemperatur"
+      },
+      "type": "number",
+      "getable": true,
+      "setable": true,
+      "uiComponent": "slider",
+      "icon": "/assets/icons/temperature.svg",
+      "units": {
+        "en": "°C"
+      },
+      "min": 0,
+      "max": 105,
+      "step": 0.5,
+      "decimals": 1
+    },
+    "meater_temperature_rate": {
+      "title": {
+        "en": "Core temperature change (5 min)",
+        "de": "Kerntemperaturänderung (5 Min.)"
+      },
+      "type": "number",
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/icons/temperature.svg",
+      "units": {
+        "en": "°C/min"
+      },
+      "decimals": 2,
+      "insights": true
     }
   }
 }

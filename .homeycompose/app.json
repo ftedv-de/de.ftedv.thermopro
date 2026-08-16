@@ -1,6 +1,6 @@
 {
   "id": "de.ftedv.thermopro",
-  "version": "1.5.3",
+  "version": "1.6.0",
   "compatibility": ">=12.4.0",
   "sdk": 3,
   "runtime": "nodejs",
@@ -9,16 +9,17 @@
     "local"
   ],
   "name": {
-    "en": "BLE Climate Sensors",
-    "de": "BLE Klimasensoren"
+    "en": "BLE Sensors",
+    "de": "BLE Sensors"
   },
   "description": {
-    "en": "Adds support for various BLE climate sensors e.g. temperature, humidity and more",
-    "de": "Unterstützt verschiedene BLE Klimasensoren wie z.B. Temperatur, Luftfeuchte und mehr"
+    "en": "Adds support for BLE sensors including climate, plant, and MEATER cooking probes",
+    "de": "Unterstützt BLE-Sensoren für Klima, Pflanzen und MEATER-Grillthermometer"
   },
   "tags": {
     "en": [
       "BLE",
+      "MEATER",
       "ThermoBeacon",
       "ThermoPro",
       "MiFlora",

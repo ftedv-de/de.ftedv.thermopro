@@ -1,0 +1,1 @@
+{"title":{"en":"Base battery voltage","de":"Base-Batteriespannung"},"type":"number","getable":true,"setable":false,"uiComponent":"sensor","icon":"/assets/icons/battery.svg","units":{"en":"V"},"decimals":2,"insights":true}

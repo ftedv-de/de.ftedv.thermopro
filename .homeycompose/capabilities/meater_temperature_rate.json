@@ -1,0 +1,1 @@
+{"title":{"en":"Core temperature change (5 min)","de":"Kerntemperaturänderung (5 Min.)"},"type":"number","getable":true,"setable":false,"uiComponent":"sensor","icon":"/assets/icons/temperature.svg","units":{"en":"°C/min"},"decimals":2,"insights":true}

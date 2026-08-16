@@ -1,0 +1,1 @@
+{"title":{"en":"Target core temperature","de":"Ziel-Kerntemperatur"},"type":"number","getable":true,"setable":true,"uiComponent":"slider","icon":"/assets/icons/temperature.svg","units":{"en":"°C"},"min":0,"max":105,"step":0.5,"decimals":1}

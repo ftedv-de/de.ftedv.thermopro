@@ -1,0 +1,1 @@
+{"title":{"en":"Ambient temperature","de":"Umgebungstemperatur"},"type":"number","getable":true,"setable":false,"uiComponent":"sensor","icon":"/assets/icons/temperature.svg","units":{"en":"°C"},"decimals":1,"insights":true}

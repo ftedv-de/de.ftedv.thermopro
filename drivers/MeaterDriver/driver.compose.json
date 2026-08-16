@@ -1,0 +1,25 @@
+{
+  "name": { "en": "MEATER probe", "de": "MEATER Thermometer" },
+  "class": "sensor",
+  "capabilities": [
+    "measure_meater_core_temperature",
+    "measure_meater_ambient_temperature",
+    "meater_temperature_rate",
+    "meater_target_temperature",
+    "measure_meater_estimated_time_remaining",
+    "meater_probe_rssi",
+    "meater_base_battery_voltage",
+    "measure_battery",
+    "alarm_generic"
+  ],
+  "images": {
+    "small": "{{driverAssetsPath}}/images/small.png",
+    "large": "{{driverAssetsPath}}/images/large.png",
+    "xlarge": "{{driverAssetsPath}}/images/xlarge.png"
+  },
+  "energy": { "batteries": ["OTHER"] },
+  "pair": [
+    { "id": "list_devices", "template": "list_devices", "navigation": { "next": "add_devices" } },
+    { "id": "add_devices", "template": "add_devices" }
+  ]
+}

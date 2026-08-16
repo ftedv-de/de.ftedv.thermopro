@@ -1,0 +1,1 @@
+{"title":{"en":"Core temperature","de":"Kerntemperatur"},"type":"number","getable":true,"setable":false,"uiComponent":"sensor","icon":"/assets/icons/temperature.svg","units":{"en":"°C"},"decimals":1,"insights":true}

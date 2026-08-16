@@ -1,0 +1,1 @@
+{"title":{"en":"Estimated time to target","de":"Geschätzte Restzeit"},"type":"number","getable":true,"setable":false,"uiComponent":"sensor","icon":"/assets/icons/clock.svg","units":{"en":"min"},"decimals":0,"insights":true}

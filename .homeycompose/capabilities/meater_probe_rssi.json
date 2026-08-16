@@ -1,0 +1,1 @@
+{"title":{"en":"Probe signal strength","de":"Probe-Signalstärke"},"type":"number","getable":true,"setable":false,"uiComponent":"sensor","icon":"/assets/icons/signal.svg","units":{"en":"dBm"},"decimals":0,"insights":true}

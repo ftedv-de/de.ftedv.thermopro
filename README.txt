@@ -5,6 +5,7 @@ Supported device types:
 - TempPro BLE Thermo-Hygrometer (various models)
 - Govee Thermo-Hygrometers
 - XiaoMi Flora Sensors
+- MEATER Pro / MEATER+ base
 
 TempPro devices known to work:
 - TP350, TP351, TP357, TP357S, TP358, TP359, TP393
@@ -13,6 +14,12 @@ TempPro devices known to work:
 Installation:
 When adding a new device select this app and choose the appropriate driver.
 The devices that where found will be shown in the list.
+
+MEATER:
+Pair the MEATER base, not the probe. The MEATER driver provides core and
+ambient temperatures, the probe-to-base signal strength, probe and base
+battery information, a five-minute temperature rate, a target core
+temperature, and an estimated remaining time.
 
 Tipps:
 If a device was not listed it may be that it was not sending data at that time.

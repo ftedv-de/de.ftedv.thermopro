@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "de.ftedv.thermopro",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "compatibility": ">=12.4.0",
   "sdk": 3,
   "runtime": "nodejs",
@@ -273,6 +273,19 @@
             "de": "Stellt nach dem Hinzufügen einmal kurz eine GATT-Verbindung her. Alle späteren Aktualisierungen erfolgen passiv über BLE-Advertisements."
           },
           "value": true
+        },
+        {
+          "id": "daily_gatt_battery_read",
+          "type": "checkbox",
+          "label": {
+            "en": "Read battery daily via GATT",
+            "de": "Batterie täglich per GATT auslesen"
+          },
+          "hint": {
+            "en": "Connects to the sensor once every 24 hours to refresh its battery level. This also refreshes the other sensor values.",
+            "de": "Verbindet sich alle 24 Stunden mit dem Sensor, um den Batteriestand zu aktualisieren. Dabei werden auch die übrigen Sensorwerte aktualisiert."
+          },
+          "value": false
         },
         {
           "id": "ble_address",

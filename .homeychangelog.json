@@ -37,5 +37,8 @@
   },
   "1.6.0": {
     "en": "Added MEATER probes, renamed app to resemble new situation"
+  },
+  "1.6.1": {
+    "en": "Added option in MiFlora to read battery once per day"
   }
 }

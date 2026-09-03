@@ -13,8 +13,8 @@
     "de": "BLE Sensors"
   },
   "description": {
-    "en": "Adds support for BLE sensors including climate, plant, and MEATER cooking probes",
-    "de": "Unterstützt BLE-Sensoren für Klima, Pflanzen und MEATER-Grillthermometer"
+    "en": "From your garden to your grill, all your BLE devices Homey",
+    "de": "Vom Garten bis zum Grill, all Ihre BLE Geräte in Homey"
   },
   "tags": {
     "en": [

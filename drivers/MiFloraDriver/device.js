@@ -8,12 +8,32 @@ const DATA_SERVICE_UUID = '0000120400001000800000805f9b34fb';
 const REALTIME_CHARACTERISTIC_UUID = '00001a0000001000800000805f9b34fb';
 const DATA_CHARACTERISTIC_UUID = '00001a0100001000800000805f9b34fb';
 const FIRMWARE_CHARACTERISTIC_UUID = '00001a0200001000800000805f9b34fb';
+const DAILY_GATT_READ_INTERVAL = 24 * 60 * 60 * 1000;
 
 function normalizeUuid(uuid = '') {
   return String(uuid).toLowerCase().replace(/[^0-9a-f]/g, '');
 }
 
 module.exports = class MiFloraDevice extends BaseClimateDevice {
+
+  async onInit() {
+    await super.onInit();
+    this.configureDailyGattRead();
+  }
+
+  async onUninit() {
+    this.clearDailyGattRead();
+  }
+
+  async onDeleted() {
+    this.clearDailyGattRead();
+  }
+
+  async onSettings({ newSettings, changedKeys }) {
+    if (changedKeys.includes('daily_gatt_battery_read')) {
+      this.configureDailyGattRead(newSettings.daily_gatt_battery_read === true);
+    }
+  }
 
   getDriverId() {
     return DRIVER_ID;
@@ -25,6 +45,25 @@ module.exports = class MiFloraDevice extends BaseClimateDevice {
 
   supportsInitialGattRead() {
     return true;
+  }
+
+  configureDailyGattRead(enabled = this.getSetting('daily_gatt_battery_read') === true) {
+    this.clearDailyGattRead();
+    if (!enabled) return;
+
+    this.dailyGattReadInterval = this.homey.setInterval(() => {
+      this.homey.app.runBleOperation(() => this.readInitialValuesViaGatt())
+        .catch(err => this.homey.app.debug('Daily MiFlora GATT read failed', {
+          device: this.getName(),
+          error: err?.message,
+        }));
+    }, DAILY_GATT_READ_INTERVAL);
+  }
+
+  clearDailyGattRead() {
+    if (!this.dailyGattReadInterval) return;
+    this.homey.clearInterval(this.dailyGattReadInterval);
+    this.dailyGattReadInterval = null;
   }
 
   async performInitialGattRead() {
